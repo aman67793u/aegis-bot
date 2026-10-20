@@ -19,44 +19,41 @@ db = mongo_client['aegis_db']
 settings_col = db['settings']
 filters_col = db['filters']
 sticker_filters_col = db['sticker_filters']
+warnings_col = db['warnings']
 
-# --- Languages Setup (Hindi & English) ---
+# --- Languages Setup ---
 LANGS = {
     "en": {
         "denied": "🚫 Access Denied! Only admins can use this command.",
         "owner_respect": "👑 Yes, Boss! Your wish is my command. ⚡",
-        "admin_respect": "✅ Done, Admin. 🛡️",
-        "user_not_found": "❌ User not found. Reply to a message or provide a username. 🤷‍♂️",
-        "reply_needed": "❌ Please reply to a message or specify a target. 📌",
+        "user_not_found": "❌ Target not found! Please **Reply** to their message or make sure they have sent at least one message in the group.",
         "banned": "🔨 BANNED! {} has been permanently removed. 🚫",
         "unbanned": "🕊️ {} has been unbanned. Welcome back! ✅",
-        "kicked": "👢 KICKED! {} has been kicked out. 🚪",
+        "kicked": "👢 KICKED! {} has been removed. 🚪",
         "muted": "🔇 MUTED! {} can no longer speak. 🤐",
         "unmuted": "🔊 UNMUTED! {} can speak again. 🗣️",
         "tmute_set": "⏱️ {} has been muted for {}. 🔇",
         "tban_set": "⏱️ {} has been banned for {}. 🔨",
         "tkick_set": "⏱️ {} has been kicked for {}. 👢",
-        "rules_set": "📜 Rules have been successfully updated! ✅",
-        "welcome_set": "🎉 Welcome message and media set successfully! ✅",
-        "goodbye_set": "👋 Goodbye message set successfully! ✅",
-        "filter_added": "⚙️ Text filter added for: `{}` ✅",
-        "filter_removed": "🗑️ Text filter removed for: `{}` ✅",
-        "sticker_added": "🖼️ Sticker filter added successfully! ✅",
-        "sticker_removed": "🗑️ Sticker filter removed! ✅",
-        "lang_changed": "🌐 Language successfully changed to English! 🇬🇧",
-        "chat_hello": "Hello {}! How can I help you today? 😊",
-        "chat_howareyou": "I'm doing great, thanks for asking {}! Ready to protect the group! 🛡️",
         "khatarnak_warn": "☠️ KHATRA! ☠️\n\n⚠️ {} has received a warning!\n🚨 Warning Count: {}/3\n\nNext time, it's a BAN! 💀",
         "khatarnak_ban": "💀 GAME OVER! 💀\n\n🚫 {} has been permanently banned for reaching 3 warnings. ☠️",
         "purge_success": "🧹 Successfully deleted {} messages! ✅",
-        "report_msg": "🚨 REPORT ALERT! 🚨\n\nAdmin Team, please check this user. {} reported them! ⚠️"
+        "report_msg": "🚨 REPORT ALERT! 🚨\n\nAdmin Team, please check this user. {} reported them! ⚠️",
+        "lang_changed": "🌐 Language successfully changed to English! 🇬🇧",
+        "welcome_set": "🎉 Welcome message updated! ✅",
+        "goodbye_set": "👋 Goodbye message updated! ✅",
+        "rules_set": "📜 Rules updated! ✅",
+        "filter_added": "⚙️ Filter added for: `{}` ✅",
+        "filter_removed": "🗑️ Filter removed for: `{}` ✅",
+        "sticker_added": "🖼️ Sticker filter added! ✅",
+        "sticker_removed": "🗑️ Sticker filter removed! ✅",
+        "chat_hello": "Hello {}! How can I help you today? 😊",
+        "chat_howareyou": "I'm doing great, thanks for asking {}! Ready to protect the group! 🛡️"
     },
     "hi": {
-        "denied": "🚫 Permission nahi hai! Sirf admins ye command use kar sakte hain. 🛡️",
+        "denied": "🚫 Permission nahi hai! Sirf admins ye command use kar sakte hain.",
         "owner_respect": "👑 Ji Huzoor! Aapka hukum sar aankhon par. ⚡",
-        "admin_respect": "✅ Kaam ho gaya, Admin. 🛡️",
-        "user_not_found": "❌ User nahi mila. Reply karo ya username do. 🤷‍♂️",
-        "reply_needed": "❌ Kisi message ko reply karo ya user batao. 📌",
+        "user_not_found": "❌ Target nahi mila! Kripya uske message par **Reply** karein, ya direct `/kick @username` likhein.",
         "banned": "🔨 BANNED! {} ko hamesha ke liye ban kar diya gaya. 🚫",
         "unbanned": "🕊️ {} ko unban kar diya gaya. Wapas aa sakte hain! ✅",
         "kicked": "👢 KICKED! {} ko group se bahar nikal diya gaya. 🚪",
@@ -65,20 +62,20 @@ LANGS = {
         "tmute_set": "⏱️ {} ko {} ke liye mute kar diya gaya. 🔇",
         "tban_set": "⏱️ {} ko {} ke liye ban kar diya gaya. 🔨",
         "tkick_set": "⏱️ {} ko {} ke liye kick kar diya gaya. 👢",
-        "rules_set": "📜 Group rules update kar diye gaye hain! ✅",
-        "welcome_set": "🎉 Welcome message aur media set ho gaya! ✅",
-        "goodbye_set": "👋 Goodbye message set ho gaya! ✅",
-        "filter_added": "⚙️ `{}` ke liye text filter add ho gaya. ✅",
-        "filter_removed": "🗑️ `{}` ka text filter hata diya gaya. ✅",
-        "sticker_added": "🖼️ Sticker filter successfully add ho gaya! ✅",
-        "sticker_removed": "🗑️ Sticker filter hata diya gaya! ✅",
-        "lang_changed": "🌐 Language successfully Hindi mein badal di gayi! 🇮🇳",
-        "chat_hello": "Namaste {}! Main aapki kya madad kar sakta hoon? 😊",
-        "chat_howareyou": "Main bilkul mast hoon {}! Group ki security mere haath mein hai. 🛡️",
         "khatarnak_warn": "☠️ KHATRA! ☠️\n\n⚠️ {} ko warning mili hai!\n🚨 Warning Count: {}/3\n\nAgli baar direct BAN hoga! 💀",
         "khatarnak_ban": "💀 GAME OVER! 💀\n\n🚫 {} ko 3 warnings ke baad permanently BAN kar diya gaya. ☠️",
         "purge_success": "🧹 {} messages successfully delete kar diye gaye! ✅",
-        "report_msg": "🚨 REPORT ALERT! 🚨\n\nAdmin Team, is user ko check karein. {} ne report kiya hai! ⚠️"
+        "report_msg": "🚨 REPORT ALERT! 🚨\n\nAdmin Team, is user ko check karein. {} ne report kiya hai! ⚠️",
+        "lang_changed": "🌐 Language successfully Hindi mein badal di gayi! 🇮🇳",
+        "welcome_set": "🎉 Welcome message update ho gaya! ✅",
+        "goodbye_set": "👋 Goodbye message update ho gaya! ✅",
+        "rules_set": "📜 Group rules update kar diye gaye hain! ✅",
+        "filter_added": "⚙️ `{}` ke liye filter add ho gaya. ✅",
+        "filter_removed": "🗑️ `{}` ka filter hata diya gaya. ✅",
+        "sticker_added": "🖼️ Sticker filter add ho gaya! ✅",
+        "sticker_removed": "🗑️ Sticker filter hata diya gaya! ✅",
+        "chat_hello": "Namaste {}! Main aapki kya madad kar sakta hoon? 😊",
+        "chat_howareyou": "Main bilkul mast hoon {}! Group ki security mere haath mein hai. 🛡️"
     }
 }
 
@@ -86,21 +83,36 @@ def get_lang(chat_id):
     data = settings_col.find_one({"chat_id": chat_id})
     return data.get("lang", "en") if data else "en"
 
-# --- Helper Functions ---
+# --- SMART TARGET SYSTEM (Fixes the "User Not Found" issue) ---
+async def get_target(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    # 1. Agar reply kiya hai
+    if update.message.reply_to_message and update.message.reply_to_message.from_user:
+        return update.message.reply_to_message.from_user
+    
+    # 2. Agar username ya ID di hai
+    if context.args:
+        arg = context.args[0]
+        try:
+            if arg.isdigit() or (arg.startswith('-') and arg[1:].isdigit()):
+                return await context.bot.get_chat(int(arg))
+            else:
+                if not arg.startswith('@'):
+                    arg = '@' + arg
+                return await context.bot.get_chat(arg)
+        except Exception as e:
+            logger.error(f"Target Error: {e}")
+            return None
+    return None
+
 async def is_admin_or_owner(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user_id = update.effective_user.id
     if user_id == OWNER_ID: return "owner"
-    chat_id = update.effective_chat.id
-    member = await context.bot.get_chat_member(chat_id, user_id)
-    if member.status in ['administrator', 'creator']: return "admin"
-    return "user"
-
-async def get_target(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    if update.message.reply_to_message: return update.message.reply_to_message.from_user
-    if context.args:
-        try: return await context.bot.get_chat(f"@{context.args[0]}")
-        except: return None
-    return None
+    try:
+        member = await context.bot.get_chat_member(update.effective_chat.id, user_id)
+        if member.status in ['administrator', 'creator']: return "admin"
+        return "user"
+    except Exception:
+        return "user"
 
 def extract_time(time_str):
     match = re.match(r'(\d+)([mhd])', time_str.lower())
@@ -111,7 +123,7 @@ def extract_time(time_str):
     if unit == 'd': return timedelta(days=val)
     return None
 
-# --- Background Job Queue (Auto Unmute/Unban) ---
+# --- Background Jobs ---
 async def auto_unmute(context: ContextTypes.DEFAULT_TYPE):
     job = context.job
     await context.bot.restrict_chat_member(job.chat_id, job.data['user_id'], ChatPermissions(can_send_messages=True, can_send_media_messages=True, can_send_other_messages=True, can_add_web_page_previews=True))
@@ -143,17 +155,14 @@ async def help_menu(update: Update, context: ContextTypes.DEFAULT_TYPE):
         "`/ban`, `/unban`, `/kick`\n"
         "`/mute`, `/unmute`\n"
         "`/tmute 1h`, `/tban 1d`, `/tkick 1d`\n"
-        "`/warn`, `/warns`, `/resetwarns`\n"
-        "`/purge` (reply), `/del` (reply)\n"
+        "`/warn`, `/purge`, `/del`\n"
         "`/lock`, `/unlock`\n\n"
         "⚙️ **Settings:**\n"
         "`/setlang en` or `/setlang hi`\n"
-        "`/setwelcome` (reply to text/gif)\n"
-        "`/setgoodbye`, `/setrules`, `/rules`\n"
+        "`/setwelcome`, `/setgoodbye`\n"
+        "`/setrules`, `/rules`\n"
         "`/addfilter word -> reply`\n"
-        "`/delfilter word`\n"
         "`/addsticker` (reply to sticker)\n"
-        "`/delsticker` (reply to sticker)\n"
         "`/pin`, `/id`, `/info`, `/admins`, `/report`"
     )
     await query.edit_message_text(text=text, parse_mode='Markdown')
@@ -266,7 +275,7 @@ async def unmute_user(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await update.message.reply_text(LANGS[lang]['unmuted'].format(target.first_name))
     except Exception: await update.message.reply_text("❌ Failed.")
 
-# --- Warn System with Khatarnak Face ---
+# --- Warn System ---
 async def warn_user(update: Update, context: ContextTypes.DEFAULT_TYPE):
     lang = get_lang(update.effective_chat.id)
     role = await is_admin_or_owner(update, context)
@@ -275,12 +284,11 @@ async def warn_user(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if not target: return await update.message.reply_text(LANGS[lang]["user_not_found"])
     
     chat_id, user_id = update.effective_chat.id, target.id
-    warn_col = db['warnings']
-    data = warn_col.find_one({"chat_id": chat_id, "user_id": user_id})
+    data = warnings_col.find_one({"chat_id": chat_id, "user_id": user_id})
     new_count = (data.get("count", 0) + 1) if data else 1
     
-    if data: warn_col.update_one({"_id": data["_id"]}, {"$set": {"count": new_count}})
-    else: warn_col.insert_one({"chat_id": chat_id, "user_id": user_id, "count": new_count})
+    if data: warnings_col.update_one({"_id": data["_id"]}, {"$set": {"count": new_count}})
+    else: warnings_col.insert_one({"chat_id": chat_id, "user_id": user_id, "count": new_count})
 
     await update.message.reply_text(LANGS[lang]['khatarnak_warn'].format(target.first_name, new_count))
     
@@ -288,7 +296,7 @@ async def warn_user(update: Update, context: ContextTypes.DEFAULT_TYPE):
         try:
             await context.bot.ban_chat_member(chat_id, user_id)
             await update.message.reply_text(LANGS[lang]['khatarnak_ban'].format(target.first_name))
-            warn_col.delete_one({"chat_id": chat_id, "user_id": user_id})
+            warnings_col.delete_one({"chat_id": chat_id, "user_id": user_id})
         except Exception: pass
 
 # --- Purge & Delete ---
@@ -406,7 +414,6 @@ async def check_text_filters(update: Update, context: ContextTypes.DEFAULT_TYPE)
     text = update.message.text.lower()
     lang = get_lang(update.effective_chat.id)
     
-    # Natural Chatting
     if text in ["hello", "hi", "hey", "namaste"] and not update.message.reply_to_message:
         return await update.message.reply_text(LANGS[lang]["chat_hello"].format(update.effective_user.first_name))
     if text in ["how are you", "kaise ho", "kya haal hai"] and not update.message.reply_to_message:
@@ -421,7 +428,7 @@ async def check_sticker_filters(update: Update, context: ContextTypes.DEFAULT_TY
     data = sticker_filters_col.find_one({"chat_id": update.effective_chat.id, "sticker_id": sticker_id})
     if data: await update.message.reply_text(data['reply'])
 
-# --- Anti-Link System ---
+# --- Anti-Link ---
 async def anti_link(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if not update.message or not update.message.text: return
     if await is_admin_or_owner(update, context) in ["admin", "owner"]: return 
@@ -431,7 +438,7 @@ async def anti_link(update: Update, context: ContextTypes.DEFAULT_TYPE):
             await update.message.reply_text(f"⚠️ {update.effective_user.first_name}, links allowed nahi hain! 🚫")
         except: pass
 
-# --- Info & Utility Commands ---
+# --- Info & Utility ---
 async def pin_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if await is_admin_or_owner(update, context) == "user": return
     if not update.message.reply_to_message: return await update.message.reply_text("❌ Reply to a message to pin.")
@@ -470,12 +477,11 @@ def main():
     token = os.environ.get("TELEGRAM_BOT_TOKEN")
     app = Application.builder().token(token).build()
     
-    # Core & Help
     app.add_handler(CommandHandler("start", start))
+    app.add_handler(CommandHandler("help", help_menu)) # Added help directly
     app.add_handler(CallbackQueryHandler(help_menu, pattern="help_menu"))
     app.add_handler(CommandHandler("setlang", set_lang))
     
-    # Moderation
     app.add_handler(CommandHandler("ban", ban_user))
     app.add_handler(CommandHandler("unban", unban_user))
     app.add_handler(CommandHandler("kick", kick_user))
@@ -490,33 +496,29 @@ def main():
     app.add_handler(CommandHandler("purge", purge_messages))
     app.add_handler(CommandHandler("del", del_message))
     
-    # Settings
     app.add_handler(CommandHandler("setwelcome", set_welcome))
     app.add_handler(CommandHandler("setgoodbye", set_goodbye))
     app.add_handler(CommandHandler("setrules", set_rules))
     app.add_handler(CommandHandler("rules", show_rules))
     
-    # Filters (Text & Stickers)
     app.add_handler(CommandHandler("addfilter", add_text_filter))
     app.add_handler(CommandHandler("delfilter", del_text_filter))
     app.add_handler(CommandHandler("addsticker", add_sticker_filter))
     app.add_handler(CommandHandler("delsticker", del_sticker_filter))
     
-    # Message Catchers
     app.add_handler(MessageHandler(filters.StatusUpdate.NEW_CHAT_MEMBERS, welcome_new_member))
     app.add_handler(MessageHandler(filters.StatusUpdate.LEFT_CHAT_MEMBER, goodbye_member))
     app.add_handler(MessageHandler(filters.Sticker.ALL, check_sticker_filters))
     app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, anti_link))
     app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, check_text_filters))
     
-    # Info
     app.add_handler(CommandHandler("pin", pin_message))
     app.add_handler(CommandHandler("id", get_id))
     app.add_handler(CommandHandler("info", user_info))
     app.add_handler(CommandHandler("admins", list_admins))
     app.add_handler(CommandHandler("report", report_user))
 
-    print("Aegis Mega Bot is running...")
+    print("Aegis Mega Bot is running perfectly...")
     app.run_polling()
 
 if __name__ == '__main__':
